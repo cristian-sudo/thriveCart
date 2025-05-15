@@ -47,7 +47,7 @@ class BasketController extends Controller
         $user = $request->user();
 
         if ($user !== null) {
-            $userId = (int) $user->id; // Now PHPStan knows $user is not mixed
+            $userId = (int) $user->id;
             $this->basketService->addProduct($userId, $code);
             return $this->successResponse('Product added to basket successfully');
         }

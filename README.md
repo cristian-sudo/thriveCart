@@ -1,61 +1,152 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Shopping Basket Test Exercise
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a Laravel-based implementation of a shopping basket system that handles product management, delivery rules, and special offers.
 
-## About Laravel
+## Technologies Used
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Backend Framework**: Laravel 12.x
+- **PHP Version**: 8.3
+- **Database**: MySQL 8.0
+- **Testing Framework**: Pest PHP
+- **Static Analysis**: PHPStan
+- **Containerization**: Docker & Docker Compose
+- **Web Server**: Apache
+- **Package Manager**: Composer
+- **Build Tool**: Make
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Product catalog management
+- Shopping basket functionality
+- Delivery cost rules based on basket total
+- Special offers (e.g., buy one get one half price)
+- RESTful API endpoints for basket operations
 
-## Learning Laravel
+## Product Catalog
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The system supports the following products:
+- Red Widget (R01) - £32.95
+- Green Widget (G01) - £24.95
+- Blue Widget (B01) - £7.95
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Delivery Rules
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Delivery charges are calculated based on the basket total:
+- Orders under £50: £4.95 delivery charge
+- Orders between £50 and £90: £2.95 delivery charge
+- Orders over £90: Free delivery
 
-## Laravel Sponsors
+## Special Offers
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+The system implements the following special offer:
+- Buy One Get One Half Price on Red Widgets (R01)
 
-### Premium Partners
+## API Endpoints
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1. Initialize Basket
+   - `POST /api/basket/init`
+   - Initializes the basket with product catalog, delivery rules, and offers
 
-## Contributing
+2. Add Product
+   - `POST /api/basket/add`
+   - Adds a product to the basket by product code
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. Get Total
+   - `GET /api/basket/total`
+   - Calculates the total cost including delivery and applicable offers
 
-## Code of Conduct
+## Development Tools
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Make Commands
 
-## Security Vulnerabilities
+The project includes several Make commands for common development tasks:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+# Run tests
+make test
 
-## License
+# Run PHPStan analysis
+make phpstan
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Run both tests and PHPStan
+make check
+```
+
+### PHPStan
+
+Static analysis is performed using PHPStan. The configuration is set to analyze the `app` directory. Run the analysis with:
+
+```bash
+make phpstan
+```
+
+## Docker Setup
+
+The project is containerized using Docker and Docker Compose. The setup includes:
+
+- PHP 8.3 with Apache
+- MySQL 8.0
+- Custom Apache configuration
+- Volume mapping for development
+- Network configuration
+
+### Docker Services
+
+- **App**: PHP 8.3 + Apache (Port 8001)
+- **MySQL**: Database server (Port 3307)
+
+### Docker Commands
+
+```bash
+# Start the containers
+docker-compose up -d
+
+# Stop the containers
+docker-compose down
+
+# Rebuild containers
+docker-compose up -d --build
+```
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   composer install
+   npm install
+   ```
+3. Copy `.env.example` to `.env` and configure your environment
+4. Run migrations:
+   ```bash
+   php artisan migrate
+   ```
+5. Start the development server:
+   ```bash
+   php artisan serve
+   ```
+
+## Running Tests
+
+The project uses Pest PHP for testing. Run the tests with:
+
+```bash
+php artisan test
+```
+
+## Test Cases
+
+The test suite covers:
+- Basket initialization
+- Product addition
+- Total calculation with and without offers
+- Delivery charge calculations
+- Validation of input data
+
+## Requirements
+
+- PHP 8.3 or higher
+- Composer
+- Node.js and NPM
+- MySQL 8.0 or compatible database
+- Docker and Docker Compose (for containerized setup)
