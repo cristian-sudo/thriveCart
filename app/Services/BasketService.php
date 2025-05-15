@@ -6,6 +6,7 @@ use App\Interfaces\BasketServiceInterface;
 use App\Models\DeliveryRule;
 use App\Models\Offer;
 use App\Models\Product;
+use App\Models\Basket;
 
 class BasketService implements BasketServiceInterface
 {
@@ -30,9 +31,13 @@ class BasketService implements BasketServiceInterface
         }
     }
 
-    public function addProduct(string $code): void
+    public function addProduct(int $userId, string $code): void
     {
+        $product = Product::where('code', $code)->firstOrFail();
 
+        $basket = Basket::firstOrCreate(['user_id' => $userId]);
+
+        $basket->products()->syncWithoutDetaching([$product->id => ['quantity' => 1]]);
     }
 
     public function getTotal(): float

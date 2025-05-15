@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Product;
+use App\Models\User;
 
 uses(RefreshDatabase::class);
 
@@ -93,7 +95,27 @@ it('returns validation errors when initialization data is invalid', function () 
         ]);
 });
 
-it('adds a product to the basket by product code via API')->todo();
+it('adds a product to the basket by product code via API', function () {
+    $this->insertPredefinedBasketData();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $response = $this->postJson(route('basket.add'), ['code' => 'R01']);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Product added to basket successfully',
+        ]);
+
+    $this->assertDatabaseHas('basket_product', [
+        'basket_id' => $user->basket->id,
+        'product_id' => Product::where('code', 'R01')->first()->id,
+        'quantity' => 1,
+    ]);
+});
 
 it('calculates the total cost of the basket without any offers via API')->todo();
 

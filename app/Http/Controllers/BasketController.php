@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
 use App\Http\Requests\InitializeBasketRequest;
-use App\Models\Product;
 use App\Services\BasketService;
 
 class BasketController extends Controller
@@ -29,6 +27,19 @@ class BasketController extends Controller
         );
 
         return $this->successResponse('Basket initialized successfully');
+    }
+
+    public function add(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|exists:products,code',
+        ]);
+
+        $userId = $request->user()->id;
+
+        $this->basketService->addProduct($userId, $request->input('code'));
+
+        return $this->successResponse('Product added to basket successfully');
     }
 
 }

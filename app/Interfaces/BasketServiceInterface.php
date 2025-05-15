@@ -12,7 +12,7 @@ interface BasketServiceInterface
     /**
      * Add a product to the basket by product code.
      */
-    public function addProduct(string $code): void;
+    public function addProduct(int $user_id, string $code): void;
 
     /**
      * Get the total cost of the basket, including delivery and offers.
