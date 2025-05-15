@@ -129,12 +129,16 @@ it('calculates the total cost of the basket without any offers via API', functio
 
     $response = $this->getJson(route('basket.total'));
 
+    $expectedSubtotal = 32.95 + 24.95;
+    $expectedDeliveryCharge = 2.95;
+    $expectedTotal = $expectedSubtotal + $expectedDeliveryCharge;
+
     $response->assertStatus(200)
         ->assertJson([
             'status' => 'success',
             'message' => 'Total calculated successfully',
             'data' => [
-                'total' => 57.90, // 32.95 + 24.95
+                'total' => round($expectedTotal, 2),
             ],
         ]);
 });
@@ -149,6 +153,10 @@ it('calculates the total cost of the basket with an optional offer code via API'
     $this->postJson(route('basket.add'), ['code' => 'R01']);
     $this->postJson(route('basket.add'), ['code' => 'R01']);
 
+    $expectedSubtotal = 32.95 + (32.95 / 2);
+    $expectedDeliveryCharge = 4.95;
+    $expectedTotal = $expectedSubtotal + $expectedDeliveryCharge;
+
     $offerCode = 'buy_one_get_one_half_price';
     $response = $this->getJson(route('basket.total', ['offer_code' => $offerCode]));
 
@@ -157,11 +165,60 @@ it('calculates the total cost of the basket with an optional offer code via API'
             'status' => 'success',
             'message' => 'Total calculated successfully',
             'data' => [
-                'total' => 49.43,
+                'total' => round($expectedTotal, 2),
             ],
         ]);
 });
 
-it('calculates the total cost with delivery charges applied via API')->todo();
+it('calculates the total cost with delivery charges applied via API', function () {
+    $this->insertPredefinedBasketData();
 
-it('calculates the total cost with free delivery via API')->todo();
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $this->postJson(route('basket.add'), ['code' => 'R01']);
+    $this->postJson(route('basket.add'), ['code' => 'G01']);
+
+    $response = $this->getJson(route('basket.total'));
+
+    $expectedSubtotal = 32.95 + 24.95; // Prices of R01 and G01
+    $expectedDeliveryCharge = 2.95; // Charge for a subtotal below 90
+    $expectedTotal = $expectedSubtotal + $expectedDeliveryCharge;
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Total calculated successfully',
+            'data' => [
+                'total' => round($expectedTotal, 2),
+            ],
+        ]);
+});
+
+it('calculates the total cost with free delivery via API', function () {
+    $this->insertPredefinedBasketData();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $this->postJson(route('basket.add'), ['code' => 'R01']);
+    $this->postJson(route('basket.add'), ['code' => 'R01']);
+    $this->postJson(route('basket.add'), ['code' => 'G01']);
+
+    $response = $this->getJson(route('basket.total'));
+
+    $expectedSubtotal = (32.95 * 2) + 24.95; // Two R01 and one G01
+    $expectedDeliveryCharge = 0.00; // Free delivery for subtotal above 100
+    $expectedTotal = $expectedSubtotal + $expectedDeliveryCharge;
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Total calculated successfully',
+            'data' => [
+                'total' => round($expectedTotal, 2),
+            ],
+        ]);
+});

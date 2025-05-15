@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponse;
 use App\Http\Requests\InitializeBasketRequest;
@@ -11,38 +12,50 @@ class BasketController extends Controller
 {
     use ApiResponse;
 
-    protected $basketService;
+    protected BasketService $basketService;
 
     public function __construct(BasketService $basketService)
     {
         $this->basketService = $basketService;
     }
 
-    public function init(InitializeBasketRequest $request)
+    public function init(InitializeBasketRequest $request): JsonResponse
     {
-        $this->basketService->initialize(
-            $request->input('products'),
-            $request->input('delivery_rules'),
-            $request->input('offers')
-        );
+        $products = (array) $request->input('products');
+        $deliveryRules = (array) $request->input('delivery_rules');
+        $offers = (array) $request->input('offers');
+
+        $this->basketService->initialize($products, $deliveryRules, $offers);
 
         return $this->successResponse('Basket initialized successfully');
     }
 
-    public function add(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function add(Request $request): JsonResponse
     {
         $request->validate([
             'code' => 'required|string|exists:products,code',
         ]);
 
-        $userId = $request->user()->id;
+        /** @var string $code */
+        $code = $request->input('code');
 
-        $this->basketService->addProduct($userId, $request->input('code'));
+        /** @var \App\Models\User|null $user */
+        $user = $request->user();
 
-        return $this->successResponse('Product added to basket successfully');
+        if ($user !== null) {
+            $userId = (int) $user->id; // Now PHPStan knows $user is not mixed
+            $this->basketService->addProduct($userId, $code);
+            return $this->successResponse('Product added to basket successfully');
+        }
+
+        return $this->errorResponse('User not authenticated', 401);
     }
 
-    public function total(Request $request)
+    public function total(Request $request): JsonResponse
     {
         $userId = auth()->id();
         $offerCode = $request->query('offer_code');

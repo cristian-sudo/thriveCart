@@ -71,6 +71,22 @@ class BasketService implements BasketServiceInterface
             }
         }
 
+        $deliveryCharge = $this->calculateDeliveryCharge($total);
+        $total += $deliveryCharge;
+
         return round($total, 2);
+    }
+
+    private function calculateDeliveryCharge(float $subtotal): float
+    {
+        $deliveryRules = DeliveryRule::orderBy('threshold', 'asc')->get();
+
+        foreach ($deliveryRules as $rule) {
+            if ($subtotal < $rule->threshold) {
+                return $rule->cost;
+            }
+        }
+
+        return 0.0;
     }
 }
