@@ -17,5 +17,5 @@ interface BasketServiceInterface
     /**
      * Get the total cost of the basket, including delivery and offers.
      */
-    public function getTotal(): float;
+    public function getTotal(int $user_id): float;
 }

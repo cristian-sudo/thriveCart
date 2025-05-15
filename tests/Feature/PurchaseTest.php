@@ -117,7 +117,27 @@ it('adds a product to the basket by product code via API', function () {
     ]);
 });
 
-it('calculates the total cost of the basket without any offers via API')->todo();
+it('calculates the total cost of the basket without any offers via API', function () {
+    $this->insertPredefinedBasketData();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $this->postJson(route('basket.add'), ['code' => 'R01']);
+    $this->postJson(route('basket.add'), ['code' => 'G01']);
+
+    $response = $this->getJson(route('basket.total'));
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Total calculated successfully',
+            'data' => [
+                'total' => 57.90, // 32.95 + 24.95
+            ],
+        ]);
+});
 
 it('applies the "buy one red widget, get the second half price" offer via API')->todo();
 

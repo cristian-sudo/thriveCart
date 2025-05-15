@@ -31,17 +31,27 @@ class BasketService implements BasketServiceInterface
         }
     }
 
-    public function addProduct(int $userId, string $code): void
+    public function addProduct(int $user_id, string $code): void
     {
         $product = Product::where('code', $code)->firstOrFail();
 
-        $basket = Basket::firstOrCreate(['user_id' => $userId]);
+        $basket = Basket::firstOrCreate(['user_id' => $user_id]);
 
         $basket->products()->syncWithoutDetaching([$product->id => ['quantity' => 1]]);
     }
 
-    public function getTotal(): float
+    public function getTotal(int $user_id): float
     {
+        $basket = Basket::where('user_id', $user_id)->first();
 
+        if (!$basket) {
+            return 0.0;
+        }
+
+        $total = $basket->products->sum(function ($product) {
+            return $product->price * $product->pivot->quantity;
+        });
+
+        return round($total, 2);
     }
 }
