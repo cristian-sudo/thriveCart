@@ -1,0 +1,29 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: triveCard
+        ports:
+            - "8001:80"
+        volumes:
+            - .:/var/www/html
+        networks:
+            - laravel
+
+    mysql:
+        image: mysql:8.0
+        container_name: triveCard_db
+        ports:
+            - "3307:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: laravel
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: laravel
+        networks:
+            - laravel
+
+networks:
+    laravel:
+        driver: bridge
