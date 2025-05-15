@@ -37,10 +37,17 @@ class BasketService implements BasketServiceInterface
 
         $basket = Basket::firstOrCreate(['user_id' => $user_id]);
 
-        $basket->products()->syncWithoutDetaching([$product->id => ['quantity' => 1]]);
+        $existingProduct = $basket->products()->where('product_id', $product->id)->first();
+
+        if ($existingProduct) {
+            $currentQuantity = $existingProduct->pivot->quantity;
+            $basket->products()->updateExistingPivot($product->id, ['quantity' => $currentQuantity + 1]);
+        } else {
+            $basket->products()->attach($product->id, ['quantity' => 1]);
+        }
     }
 
-    public function getTotal(int $user_id): float
+    public function getTotal(int $user_id, ?string $offerCode = null): float
     {
         $basket = Basket::where('user_id', $user_id)->first();
 
@@ -48,9 +55,21 @@ class BasketService implements BasketServiceInterface
             return 0.0;
         }
 
-        $total = $basket->products->sum(function ($product) {
-            return $product->price * $product->pivot->quantity;
-        });
+        $total = 0;
+
+        $offer = $offerCode ? Offer::where('type', $offerCode)->first() : null;
+        $offerStrategy = $offer ? OfferFactory::create($offer->type) : null;
+
+        foreach ($basket->products as $product) {
+            $quantity = $product->pivot->quantity;
+            $price = $product->price;
+
+            if ($offerStrategy && $product->code === $offer->product_code) {
+                $total += $offerStrategy->apply($basket, $product, $quantity, $price);
+            } else {
+                $total += $quantity * $price;
+            }
+        }
 
         return round($total, 2);
     }

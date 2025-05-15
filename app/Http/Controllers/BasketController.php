@@ -42,10 +42,12 @@ class BasketController extends Controller
         return $this->successResponse('Product added to basket successfully');
     }
 
-    public function total()
+    public function total(Request $request)
     {
         $userId = auth()->id();
-        $total = $this->basketService->getTotal($userId);
+        $offerCode = $request->query('offer_code');
+
+        $total = $this->basketService->getTotal($userId, $offerCode);
 
         return $this->successResponse('Total calculated successfully', ['total' => $total]);
     }

@@ -139,7 +139,28 @@ it('calculates the total cost of the basket without any offers via API', functio
         ]);
 });
 
-it('applies the "buy one red widget, get the second half price" offer via API')->todo();
+it('calculates the total cost of the basket with an optional offer code via API', function () {
+    $this->insertPredefinedBasketData();
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $this->postJson(route('basket.add'), ['code' => 'R01']);
+    $this->postJson(route('basket.add'), ['code' => 'R01']);
+
+    $offerCode = 'buy_one_get_one_half_price';
+    $response = $this->getJson(route('basket.total', ['offer_code' => $offerCode]));
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 'success',
+            'message' => 'Total calculated successfully',
+            'data' => [
+                'total' => 49.43,
+            ],
+        ]);
+});
 
 it('calculates the total cost with delivery charges applied via API')->todo();
 
