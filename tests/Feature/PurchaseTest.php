@@ -38,6 +38,21 @@ it('initializes the basket with product catalog, delivery rules, and offers via 
             'errors' => null,
             'statusCode' => 200
         ]);
+
+    foreach ($data['products'] as $product) {
+        $this->assertDatabaseHas('products', $product);
+    }
+
+    foreach ($data['delivery_rules'] as $rule) {
+        $this->assertDatabaseHas('delivery_rules', $rule);
+    }
+
+    foreach ($data['offers'] as $type => $productCode) {
+        $this->assertDatabaseHas('offers', [
+            'type' => $type,
+            'product_code' => $productCode,
+        ]);
+    }
 });
 
 it('returns validation errors when initialization data is invalid', function () {
